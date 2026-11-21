@@ -14,8 +14,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def main():
     out = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out, exist_ok=True)
-    shutil.copyfile(os.path.join(HERE, "entry.png"),
-                    os.path.join(out, "entry.png"))
+    src = os.path.join(HERE, "entry.png")
+    dst = os.path.join(out, "entry.png")
+    shutil.copyfile(src, dst)
+    # Fail loudly on a partial/truncated copy instead of shipping a
+    # corrupt artifact: the copied file must be byte-for-byte the source.
+    if os.path.getsize(dst) != os.path.getsize(src):
+        raise SystemExit(
+            f"copy verification failed: {dst} is "
+            f"{os.path.getsize(dst)} bytes, expected {os.path.getsize(src)}"
+        )
 
 
 if __name__ == "__main__":
